@@ -1,15 +1,14 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { LayoutDashboard, KanbanSquare, Settings as SettingsIcon } from 'lucide-react'
+import { LayoutDashboard, Settings as SettingsIcon } from 'lucide-react'
 import Layout from './layout/Layout.jsx'
 import Overview from './pages/Overview.jsx'
 import Kanban from './pages/Kanban.jsx'
 import Settings from './pages/Settings.jsx'
+import { BOARDS } from './boards.js'
 
-// Sidebar nav items. Adding a page is a two-line change: add an entry here
-// (with an icon) and a matching <Route> below.
+// Top-level sidebar items.
 export const navItems = [
   { path: '/', label: 'Overview', end: true, icon: LayoutDashboard },
-  { path: '/kanban', label: 'Kanban', icon: KanbanSquare },
 ]
 
 // Pinned to the bottom of the sidebar.
@@ -22,7 +21,12 @@ export default function App() {
     <Layout>
       <Routes>
         <Route path="/" element={<Overview />} />
-        <Route path="/kanban" element={<Kanban />} />
+        <Route path="/kanban/:boardId" element={<Kanban />} />
+        {/* Bare /kanban → first board */}
+        <Route
+          path="/kanban"
+          element={<Navigate to={`/kanban/${BOARDS[0].id}`} replace />}
+        />
         <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

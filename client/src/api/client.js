@@ -8,10 +8,35 @@ async function request(path, options = {}) {
   if (!res.ok) {
     throw new Error(`API ${path} failed: ${res.status}`)
   }
+  // 204 No Content (e.g. deletes) has no body to parse.
+  if (res.status === 204) return null
   return res.json()
 }
 
+const body = (data) => ({ body: JSON.stringify(data) })
+
 export const api = {
   health: () => request('/health'),
-  getBoard: () => request('/kanban/board'),
+
+  // ---- Kanban ----
+  getBoard: (boardId) => request(`/kanban/${boardId}/board`),
+
+  addColumn: (boardId, title) =>
+    request(`/kanban/${boardId}/columns`, { method: 'POST', ...body({ title }) }),
+  updateColumn: (columnId, fields) =>
+    request(`/kanban/columns/${columnId}`, { method: 'PATCH', ...body(fields) }),
+  deleteColumn: (columnId) =>
+    request(`/kanban/columns/${columnId}`, { method: 'DELETE' }),
+
+  addCard: (columnId, fields) =>
+    request(`/kanban/columns/${columnId}/cards`, { method: 'POST', ...body(fields) }),
+  updateCard: (cardId, fields) =>
+    request(`/kanban/cards/${cardId}`, { method: 'PATCH', ...body(fields) }),
+  deleteCard: (cardId) =>
+    request(`/kanban/cards/${cardId}`, { method: 'DELETE' }),
+  moveCard: (cardId, toColumnId, toIndex) =>
+    request(`/kanban/cards/${cardId}/move`, {
+      method: 'POST',
+      ...body({ toColumnId, toIndex }),
+    }),
 }

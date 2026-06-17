@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { ChevronLeft } from 'lucide-react'
 import { navItems, bottomNavItems } from '../App.jsx'
+import { BOARDS } from '../boards.js'
 import Logo from './Logo.jsx'
 
 const STORAGE_KEY = 'mv:sidebar-collapsed'
@@ -17,6 +18,19 @@ function NavItem({ item, collapsed }) {
     >
       <Icon className="sidebar-icon" size={20} strokeWidth={1.75} />
       <span className="sidebar-label">{item.label}</span>
+    </NavLink>
+  )
+}
+
+function BoardItem({ board, collapsed }) {
+  return (
+    <NavLink
+      to={`/kanban/${board.id}`}
+      title={collapsed ? board.name : undefined}
+      className={({ isActive }) => 'sidebar-link' + (isActive ? ' is-active' : '')}
+    >
+      <span className="sidebar-avatar">{board.initial}</span>
+      <span className="sidebar-label">{board.name}</span>
     </NavLink>
   )
 }
@@ -50,6 +64,11 @@ export default function Sidebar() {
       <nav className="sidebar-nav">
         {navItems.map((item) => (
           <NavItem key={item.path} item={item} collapsed={collapsed} />
+        ))}
+
+        <div className="sidebar-section-label">Kanban</div>
+        {BOARDS.map((board) => (
+          <BoardItem key={board.id} board={board} collapsed={collapsed} />
         ))}
       </nav>
 

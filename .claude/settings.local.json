@@ -22,7 +22,16 @@
       "Bash(bash -lc 'source ~/.nvm/nvm.sh && nvm use 22 >/dev/null 2>&1 && npm run build 2>&1 | tail -6')",
       "mcp__Claude_Preview__preview_start",
       "Bash(xargs kill -9)",
-      "Bash(echo \"5173: $\\(lsof -ti:5173 || echo free\\) 3001: $\\(lsof -ti:3001 || echo free\\)\")"
+      "Bash(echo \"5173: $\\(lsof -ti:5173 || echo free\\) 3001: $\\(lsof -ti:3001 || echo free\\)\")",
+      "Bash(bash -lc 'source ~/.nvm/nvm.sh && nvm use 22 >/dev/null 2>&1 && npm install @dnd-kit/core@^6.1.0 @dnd-kit/sortable@^8.0.0 @dnd-kit/utilities@^3.2.2 2>&1 | tail -3')",
+      "Bash(bash -lc 'source ~/.nvm/nvm.sh && nvm use 22 >/dev/null 2>&1 && \\(node server/index.js > /tmp/mv-srv.log 2>&1 &\\) ; sleep 1.5 *)",
+      "Bash(bash -lc 'source ~/.nvm/nvm.sh && nvm use 22 >/dev/null 2>&1 && \\(node server/index.js > /tmp/mv-srv.log 2>&1 &\\) ; sleep 1.5; curl -s localhost:3001/api/health; echo \" <- server up\"')",
+      "Bash(curl -s http://localhost:3001/api/kanban/gustavo/board)",
+      "Bash(python3 -c \"import sys,json;d=json.load\\(sys.stdin\\);print\\('Gustavo cards by column:'\\); [print\\(' ',c['title'],'->',[card['title'] for card in c['cards']]\\) for c in d['columns']]\")",
+      "Bash(curl -s http://localhost:3001/api/kanban/lucas/board)",
+      "Bash(python3 -c \"import sys,json;d=json.load\\(sys.stdin\\); print\\(' Lucas To Do:', [card['title'] for card in d['columns'][0]['cards']]\\)\")",
+      "Bash(python3 -c ' *)",
+      "Bash(bash -lc 'source ~/.nvm/nvm.sh && nvm use 22 >/dev/null 2>&1 && \\(node server/index.js > /tmp/mv-srv.log 2>&1 &\\); sleep 1.5 *)"
     ]
   }
 }
