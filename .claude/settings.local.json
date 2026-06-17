@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git init *)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Read(//Users/lucascredie/.nvm/versions/node/**)",
+      "Bash(bash -lc 'source ~/.nvm/nvm.sh 2>/dev/null && nvm ls --no-colors 2>/dev/null | grep -v \"N/A\"')",
+      "Bash(bash -lc 'source ~/.nvm/nvm.sh && nvm use 22 >/dev/null && node --version && npm run build 2>&1 | tail -8')",
+      "Bash(bash -lc 'source ~/.nvm/nvm.sh && nvm use 22 >/dev/null && node index.js & SRV=$!; sleep 1.5; echo \"--- SPA root \\(should be HTML\\) ---\"; curl -s localhost:3001/ | head -c 120; echo; echo \"--- deep route fallback ---\"; curl -s -o /dev/null -w \"%{http_code}\\\\n\" localhost:3001/kanban; echo \"--- api still works ---\"; curl -s localhost:3001/api/health; echo; kill $SRV 2>/dev/null')"
+    ]
+  }
+}

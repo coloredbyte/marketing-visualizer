@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.env
+.env.local
+*.log
+
+# Local JSON data store (step 1 persistence)
+server/data/*.json
+!server/data/.gitkeep
