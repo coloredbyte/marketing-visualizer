@@ -17,7 +17,12 @@
       "Bash(lsof -ti:5173)",
       "Bash(bash -lc 'source ~/.nvm/nvm.sh && nvm use 22 >/dev/null 2>&1 && \\(npm run dev > /tmp/mv-dev2.log 2>&1 &\\) ; sleep 6; echo \"--- api ---\"; curl -s localhost:3001/api/health; echo; echo \"--- board ---\"; curl -s -o /dev/null -w \"%{http_code}\\\\n\" localhost:3001/api/kanban/board; echo \"--- vite ---\"; curl -s -o /dev/null -w \"%{http_code}\\\\n\" localhost:5173/; echo \"--- full log ---\"; cat /tmp/mv-dev2.log; pkill -f \"index.js\" 2>/dev/null; pkill -f vite 2>/dev/null; pkill -f concurrently 2>/dev/null; echo cleaned')",
       "Bash(git add *)",
-      "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'Add root scripts to run client + server with one command *)"
+      "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'Add root scripts to run client + server with one command *)",
+      "Bash(bash -lc 'source ~/.nvm/nvm.sh && nvm use 22 >/dev/null 2>&1 && npm install lucide-react@^0.460.0 2>&1 | tail -3')",
+      "Bash(bash -lc 'source ~/.nvm/nvm.sh && nvm use 22 >/dev/null 2>&1 && npm run build 2>&1 | tail -6')",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(xargs kill -9)",
+      "Bash(echo \"5173: $\\(lsof -ti:5173 || echo free\\) 3001: $\\(lsof -ti:3001 || echo free\\)\")"
     ]
   }
 }
