@@ -7,7 +7,17 @@
       "Read(//Users/lucascredie/.nvm/versions/node/**)",
       "Bash(bash -lc 'source ~/.nvm/nvm.sh 2>/dev/null && nvm ls --no-colors 2>/dev/null | grep -v \"N/A\"')",
       "Bash(bash -lc 'source ~/.nvm/nvm.sh && nvm use 22 >/dev/null && node --version && npm run build 2>&1 | tail -8')",
-      "Bash(bash -lc 'source ~/.nvm/nvm.sh && nvm use 22 >/dev/null && node index.js & SRV=$!; sleep 1.5; echo \"--- SPA root \\(should be HTML\\) ---\"; curl -s localhost:3001/ | head -c 120; echo; echo \"--- deep route fallback ---\"; curl -s -o /dev/null -w \"%{http_code}\\\\n\" localhost:3001/kanban; echo \"--- api still works ---\"; curl -s localhost:3001/api/health; echo; kill $SRV 2>/dev/null')"
+      "Bash(bash -lc 'source ~/.nvm/nvm.sh && nvm use 22 >/dev/null && node index.js & SRV=$!; sleep 1.5; echo \"--- SPA root \\(should be HTML\\) ---\"; curl -s localhost:3001/ | head -c 120; echo; echo \"--- deep route fallback ---\"; curl -s -o /dev/null -w \"%{http_code}\\\\n\" localhost:3001/kanban; echo \"--- api still works ---\"; curl -s localhost:3001/api/health; echo; kill $SRV 2>/dev/null')",
+      "Bash(bash -lc 'source ~/.nvm/nvm.sh && nvm use 22 >/dev/null 2>&1 && npm install 2>&1 | tail -3')",
+      "Bash(bash -lc 'source ~/.nvm/nvm.sh && nvm use 22 >/dev/null 2>&1 && \\(npm run dev > /tmp/mv-dev.log 2>&1 &\\) ; sleep 6; echo \"--- api ---\"; curl -s localhost:3001/api/health; echo; echo \"--- vite ---\"; curl -s -o /dev/null -w \"%{http_code}\\\\n\" localhost:5173/; echo \"--- log tail ---\"; tail -6 /tmp/mv-dev.log; pkill -f \"vite\" 2>/dev/null; pkill -f \"node --watch index.js\" 2>/dev/null; pkill -f concurrently 2>/dev/null; echo cleaned')",
+      "Bash(pkill -f \"index.js\")",
+      "Bash(pkill -f vite)",
+      "Bash(pkill -f concurrently)",
+      "Bash(lsof -ti:3001)",
+      "Bash(lsof -ti:5173)",
+      "Bash(bash -lc 'source ~/.nvm/nvm.sh && nvm use 22 >/dev/null 2>&1 && \\(npm run dev > /tmp/mv-dev2.log 2>&1 &\\) ; sleep 6; echo \"--- api ---\"; curl -s localhost:3001/api/health; echo; echo \"--- board ---\"; curl -s -o /dev/null -w \"%{http_code}\\\\n\" localhost:3001/api/kanban/board; echo \"--- vite ---\"; curl -s -o /dev/null -w \"%{http_code}\\\\n\" localhost:5173/; echo \"--- full log ---\"; cat /tmp/mv-dev2.log; pkill -f \"index.js\" 2>/dev/null; pkill -f vite 2>/dev/null; pkill -f concurrently 2>/dev/null; echo cleaned')",
+      "Bash(git add *)",
+      "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'Add root scripts to run client + server with one command *)"
     ]
   }
 }
