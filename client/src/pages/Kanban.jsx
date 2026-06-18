@@ -13,6 +13,7 @@ import { Plus, X } from 'lucide-react'
 import { api } from '../api/client.js'
 import { DEFAULT_TAG, todayISO } from '../cardFields.js'
 import Column from '../components/kanban/Column.jsx'
+import CardMeta from '../components/kanban/CardMeta.jsx'
 import CardDetailPanel from '../components/kanban/CardDetailPanel.jsx'
 
 // Locate a card or column id within the current board view.
@@ -31,6 +32,7 @@ export default function Kanban() {
   const [view, setView] = useState(null)
   const [error, setError] = useState(null)
   const [activeCard, setActiveCard] = useState(null)
+  const [activeWidth, setActiveWidth] = useState(null)
   const [addingColumn, setAddingColumn] = useState(false)
   const [newColumn, setNewColumn] = useState('')
   const [selectedId, setSelectedId] = useState(null)
@@ -98,6 +100,8 @@ export default function Kanban() {
       const col = viewRef.current.columns.find((c) => c.id === loc.colId)
       setActiveCard(col.cards[loc.index])
     }
+    // Match the overlay to the width of the card actually grabbed.
+    setActiveWidth(active.rect?.current?.initial?.width ?? null)
   }
 
   // Live cross-column movement while dragging.
@@ -247,8 +251,14 @@ export default function Kanban() {
 
           <DragOverlay>
             {activeCard ? (
-              <div className="kanban-card is-overlay">
-                <span className="kanban-card-title">{activeCard.title}</span>
+              <div
+                className="kanban-card is-overlay"
+                style={activeWidth ? { width: activeWidth } : undefined}
+              >
+                <div className="kanban-card-top">
+                  <span className="kanban-card-title">{activeCard.title}</span>
+                </div>
+                <CardMeta card={activeCard} />
               </div>
             ) : null}
           </DragOverlay>
