@@ -53,7 +53,7 @@ export default function CardDetailPanel({ card, onClose, onSave, onDelete, fees 
 
         <div className="detail-body">
           <label className="detail-field">
-            <span>Title</span>
+            <span>Member name</span>
             <input
               value={draft.title || ''}
               onChange={(e) => set('title', e.target.value)}
@@ -62,10 +62,10 @@ export default function CardDetailPanel({ card, onClose, onSave, onDelete, fees 
           </label>
 
           <label className="detail-field">
-            <span>Person</span>
+            <span>Account name</span>
             <input
               value={draft.person || ''}
-              placeholder="Name"
+              placeholder="Account name"
               onChange={(e) => set('person', e.target.value)}
               onBlur={() => persist({ person: draft.person || '' })}
             />

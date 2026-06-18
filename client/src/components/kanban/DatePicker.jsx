@@ -20,7 +20,7 @@ function parseISO(v) {
 
 // Lightweight, themed date picker. Stores/returns YYYY-MM-DD. No dependencies
 // beyond the icons we already use.
-export default function DatePicker({ value, onChange, placeholder = 'Pick a date' }) {
+export default function DatePicker({ value, onChange, placeholder = 'Pick a date', align = 'left' }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
   const selected = parseISO(value)
@@ -84,7 +84,7 @@ export default function DatePicker({ value, onChange, placeholder = 'Pick a date
       </button>
 
       {open && (
-        <div className="datepicker-pop">
+        <div className={'datepicker-pop' + (align === 'right' ? ' align-right' : '')}>
           <div className="datepicker-head">
             <button type="button" className="icon-btn" onClick={prevMonth} aria-label="Previous month">
               <ChevronLeft size={16} />

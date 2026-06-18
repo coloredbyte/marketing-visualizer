@@ -919,6 +919,14 @@ body {
   top: calc(100% + 6px);
   left: 0;
   z-index: 30;
+}
+
+.datepicker-pop.align-right {
+  left: auto;
+  right: 0;
+}
+
+.datepicker-pop {
   width: 248px;
   padding: 12px;
   background: var(--surface-2);
@@ -1309,4 +1317,139 @@ body {
   color: var(--text-muted);
   border-top: 1px solid var(--border);
   padding-top: 8px;
+}
+
+.done-card-account {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+/* ---- Done Projects filter bar ---- */
+.done-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.done-filter-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.done-filter-search {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-muted);
+}
+
+/* Width is driven by the input's `size` attribute (grows as you type). */
+.done-filter-search input {
+  border: none;
+  background: transparent;
+  outline: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.done-filter-group {
+  display: flex;
+  gap: 6px;
+}
+
+.filter-chip {
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color var(--ease), background var(--ease), border-color var(--ease);
+}
+
+.filter-chip:hover {
+  color: var(--text);
+}
+
+.filter-chip.is-on {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.done-filter-amount,
+.done-filter-dates {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.done-filter-amount input {
+  width: 80px;
+  padding: 7px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  outline: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.done-filter-amount input:focus,
+.done-filter-search:focus-within {
+  border-color: var(--accent);
+}
+
+.done-filter-dates .datepicker {
+  width: 132px;
+}
+
+.done-filter-dates .datepicker-trigger {
+  background: var(--surface);
+  padding: 7px 10px;
+}
+
+.filter-clear {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color var(--ease), background var(--ease);
+}
+
+.filter-clear:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.done-count {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
 }

@@ -297,7 +297,7 @@ export default function Kanban() {
       {!view && !error && <div className="card">Loading…</div>}
 
       {tab === 'done' && (
-        <DoneProjects done={done} fees={fees} onOpen={setSelectedId} onRestore={restoreCard} />
+        <DoneProjects done={done} onOpen={setSelectedId} onRestore={restoreCard} />
       )}
 
       {tab === 'exchanges' && view && (

@@ -103,7 +103,7 @@ export default function Column({
           <textarea
             autoFocus
             className="kanban-card-input"
-            placeholder="Card title…"
+            placeholder="Member name…"
             value={newCard}
             onChange={(e) => setNewCard(e.target.value)}
             onKeyDown={(e) => {

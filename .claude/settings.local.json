@@ -53,7 +53,10 @@
       "Bash(curl -s localhost:3001/api/kanban/lucas/board)",
       "Bash(python3 -c \"import sys,json;d=json.load\\(sys.stdin\\);print\\('cols:',[\\(c['title'],len\\(c['cards']\\)\\) for c in d['columns']]\\)\")",
       "Bash(curl -s localhost:3001/api/kanban/lucas/done)",
-      "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'Kanban: dashboards, fees, completion flow, themed dialogs & date picker *)"
+      "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'Kanban: dashboards, fees, completion flow, themed dialogs & date picker *)",
+      "Bash(python3 /tmp/mv_migrate.py)",
+      "Bash(python3 -c \"import sys,json;d=json.load\\(sys.stdin\\);print\\('active board columns:',[\\(c['title'],len\\(c['cards']\\)\\) for c in d['columns']]\\)\")",
+      "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'Kanban: rename to Member/Account, simplify Done cards, add filter bar *)"
     ]
   }
 }
