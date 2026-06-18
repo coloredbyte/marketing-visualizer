@@ -442,11 +442,16 @@ body {
   background: var(--surface);
 }
 
-.pill.pill-im_hiring,
+.pill.pill-im_hiring {
+  color: #ff9d4d;
+  border-color: rgba(255, 140, 50, 0.45);
+  background: rgba(255, 140, 50, 0.14);
+}
+
 .pill.pill-hiring_me {
-  color: var(--accent);
-  border-color: rgba(100, 46, 255, 0.4);
-  background: var(--accent-soft);
+  color: #5b9dff;
+  border-color: rgba(77, 141, 255, 0.45);
+  background: rgba(77, 141, 255, 0.14);
 }
 
 .pill.pill-upwork,
