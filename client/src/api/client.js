@@ -6,7 +6,13 @@ async function request(path, options = {}) {
     ...options,
   })
   if (!res.ok) {
-    throw new Error(`API ${path} failed: ${res.status}`)
+    let detail = ''
+    try {
+      detail = (await res.json())?.error || ''
+    } catch {
+      /* no JSON body */
+    }
+    throw new Error(detail || `Request failed (${res.status})`)
   }
   // 204 No Content (e.g. deletes) has no body to parse.
   if (res.status === 204) return null
@@ -46,4 +52,14 @@ export const api = {
   getFees: (boardId) => request(`/settings/fees/${boardId}`),
   updateFees: (boardId, fields) =>
     request(`/settings/fees/${boardId}`, { method: 'PATCH', ...body(fields) }),
+
+  // ---- Airtable ----
+  getAirtableConfig: () => request('/airtable/config'),
+  saveAirtableConfig: (fields) => request('/airtable/config', { method: 'PUT', ...body(fields) }),
+  getAirtableTables: (baseId) =>
+    request(`/airtable/tables?baseId=${encodeURIComponent(baseId)}`),
+  getAirtableRecords: (baseId, table, maxRecords = 100) =>
+    request(
+      `/airtable/records?baseId=${encodeURIComponent(baseId)}&table=${encodeURIComponent(table)}&maxRecords=${maxRecords}`,
+    ),
 }

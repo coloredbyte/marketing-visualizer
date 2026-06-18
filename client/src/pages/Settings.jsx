@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api/client.js'
 import { BOARDS } from '../boards.js'
+import AirtableConnection from '../components/AirtableConnection.jsx'
 
 // Per-board platform fees, split by side (buyer/seller). Used to compute each
 // card's fee and reused later by the global dashboard.
@@ -66,9 +67,16 @@ export default function Settings() {
   return (
     <div className="page">
       <h1>Settings</h1>
-      <p className="page-subtitle">
-        Platform fees per board, split by side (buyer = you hiring, seller = you
-        being hired). Used to calculate each card's fee.
+      <p className="page-subtitle">Connections and platform fees.</p>
+
+      <div className="settings-grid">
+        <AirtableConnection />
+      </div>
+
+      <h2 className="settings-section-title">Platform fees</h2>
+      <p className="muted settings-section-sub">
+        Per board, split by side (buyer = you hiring, seller = you being hired).
+        Used to calculate each card's fee.
       </p>
 
       <div className="settings-grid">

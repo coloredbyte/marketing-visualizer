@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path'
 import { existsSync } from 'node:fs'
 import kanbanRoutes from './routes/kanban.js'
 import settingsRoutes from './routes/settings.js'
+import airtableRoutes from './routes/airtable.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const PORT = process.env.PORT || 3001
@@ -17,6 +18,7 @@ app.get('/api/health', (_req, res) => {
 })
 app.use('/api/kanban', kanbanRoutes)
 app.use('/api/settings', settingsRoutes)
+app.use('/api/airtable', airtableRoutes)
 
 // ---- Serve built frontend in production (what Render runs) ----
 // In dev the Vite server handles the UI and proxies /api here, so this block

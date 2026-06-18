@@ -1453,3 +1453,168 @@ body {
   color: var(--text-muted);
   margin-bottom: 12px;
 }
+
+/* ---- Settings extras ---- */
+.settings-section-title {
+  margin: 28px 0 4px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.settings-section-sub {
+  margin: 0 0 16px;
+}
+
+.settings-card .muted code {
+  font-size: 12px;
+  background: var(--surface-2);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+.settings-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.conn-status {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.conn-status.is-on {
+  color: var(--green);
+}
+
+.airtable-bases {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.airtable-base-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.airtable-base-row input {
+  flex: 1;
+  min-width: 0;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 11px;
+  outline: none;
+  transition: border-color var(--ease);
+}
+
+.airtable-base-row input:focus {
+  border-color: var(--accent);
+}
+
+.airtable-base-row input.base-label {
+  flex: 0 0 140px;
+}
+
+.airtable-bases .kanban-add-trigger {
+  margin-top: 0;
+  width: auto;
+  align-self: flex-start;
+}
+
+/* ---- Airtable data explorer ---- */
+.explorer-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.explorer-bar label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.explorer-bar select {
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  outline: none;
+  cursor: pointer;
+}
+
+.explorer-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.field-chip {
+  font-size: 12px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+
+.field-chip em {
+  color: var(--text-muted);
+  font-style: normal;
+  font-size: 11px;
+}
+
+.explorer-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.explorer-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+}
+
+.explorer-table th,
+.explorer-table td {
+  text-align: left;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.explorer-table th {
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  position: sticky;
+  top: 0;
+  background: var(--surface-2);
+}
+
+.explorer-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.explorer-table tbody tr:hover td {
+  background: var(--surface-2);
+}
