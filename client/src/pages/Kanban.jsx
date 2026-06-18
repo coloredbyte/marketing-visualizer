@@ -12,6 +12,7 @@ import { arrayMove } from '@dnd-kit/sortable'
 import { Plus, X } from 'lucide-react'
 import { api } from '../api/client.js'
 import Column from '../components/kanban/Column.jsx'
+import CardDetailPanel from '../components/kanban/CardDetailPanel.jsx'
 
 // Locate a card or column id within the current board view.
 function locate(view, id) {
@@ -31,6 +32,13 @@ export default function Kanban() {
   const [activeCard, setActiveCard] = useState(null)
   const [addingColumn, setAddingColumn] = useState(false)
   const [newColumn, setNewColumn] = useState('')
+  const [selectedId, setSelectedId] = useState(null)
+
+  // The currently-open card, derived fresh from the board each render so the
+  // panel reflects saved edits.
+  const selectedCard = view
+    ? view.columns.flatMap((c) => c.cards).find((c) => c.id === selectedId) || null
+    : null
 
   // Keep a ref in lockstep with state so drag handlers read the latest board
   // without waiting for a re-render.
@@ -54,6 +62,7 @@ export default function Kanban() {
 
   useEffect(() => {
     setBoard(null)
+    setSelectedId(null)
     load()
   }, [load, setBoard])
 
@@ -73,6 +82,10 @@ export default function Kanban() {
     api.addCard(columnId, { title }).then(load).catch(load)
   const editCard = (id, fields) => api.updateCard(id, fields).then(load).catch(load)
   const deleteCard = (id) => api.deleteCard(id).then(load).catch(load)
+  const deleteCardFromPanel = (id) => {
+    setSelectedId(null)
+    deleteCard(id)
+  }
 
   // ---- Drag and drop ----
   const onDragStart = ({ active }) => {
@@ -176,6 +189,7 @@ export default function Kanban() {
                 onAddCard={addCard}
                 onEditCard={editCard}
                 onDeleteCard={deleteCard}
+                onOpenCard={setSelectedId}
               />
             ))}
 
@@ -233,6 +247,15 @@ export default function Kanban() {
             ) : null}
           </DragOverlay>
         </DndContext>
+      )}
+
+      {selectedCard && (
+        <CardDetailPanel
+          card={selectedCard}
+          onClose={() => setSelectedId(null)}
+          onSave={editCard}
+          onDelete={deleteCardFromPanel}
+        />
       )}
     </div>
   )

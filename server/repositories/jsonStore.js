@@ -48,6 +48,19 @@ async function save(data) {
   await writeFile(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8')
 }
 
+// Serialize all access so concurrent requests can't interleave their
+// load→mutate→save cycles and clobber each other (last-writer-wins). Cheap
+// insurance for the JSON store; Neon will use real transactions later.
+let chain = Promise.resolve()
+function withLock(fn) {
+  const result = chain.then(fn, fn)
+  chain = result.then(
+    () => {},
+    () => {},
+  )
+  return result
+}
+
 const byPosition = (a, b) => a.position - b.position
 
 // Renumber positions of a set of records to a clean 0..n sequence.
@@ -57,7 +70,7 @@ function renumber(records) {
   })
 }
 
-export const jsonStore = {
+const impl = {
   // ---- Reads ----
   async getBoardView(boardId) {
     const data = await load()
@@ -175,3 +188,9 @@ export const jsonStore = {
     return card
   },
 }
+
+// Public store: every method runs through the write lock so cycles never
+// interleave.
+export const jsonStore = Object.fromEntries(
+  Object.entries(impl).map(([name, fn]) => [name, (...args) => withLock(() => fn(...args))]),
+)

@@ -13,6 +13,7 @@ export default function Column({
   onAddCard,
   onEditCard,
   onDeleteCard,
+  onOpenCard,
 }) {
   const { setNodeRef } = useDroppable({ id: column.id })
   const [renaming, setRenaming] = useState(false)
@@ -77,7 +78,13 @@ export default function Column({
           strategy={verticalListSortingStrategy}
         >
           {column.cards.map((card) => (
-            <Card key={card.id} card={card} onEdit={onEditCard} onDelete={onDeleteCard} />
+            <Card
+              key={card.id}
+              card={card}
+              onEdit={onEditCard}
+              onDelete={onDeleteCard}
+              onOpen={onOpenCard}
+            />
           ))}
         </SortableContext>
         {column.cards.length === 0 && !adding && (
