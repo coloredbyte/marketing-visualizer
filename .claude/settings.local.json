@@ -34,7 +34,16 @@
       "Bash(bash -lc 'source ~/.nvm/nvm.sh && nvm use 22 >/dev/null 2>&1 && \\(node server/index.js > /tmp/mv-srv.log 2>&1 &\\); sleep 1.5 *)",
       "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'Kanban: per-person boards \\(Lucas/Gustavo\\) with full CRUD + drag-and-drop *)",
       "Bash(bash -lc 'source ~/.nvm/nvm.sh && nvm use 22 >/dev/null 2>&1 && \\(node server/index.js > /tmp/mv-srv.log 2>&1 &\\); sleep 1.5; curl -s localhost:3001/api/health; echo \" server up\"')",
-      "Bash(bash -lc 'source ~/.nvm/nvm.sh && nvm use 22 >/dev/null 2>&1 && \\(node server/index.js > /tmp/mv-srv.log 2>&1 &\\); sleep 1.5; curl -s localhost:3001/api/health; echo \" up\"')"
+      "Bash(bash -lc 'source ~/.nvm/nvm.sh && nvm use 22 >/dev/null 2>&1 && \\(node server/index.js > /tmp/mv-srv.log 2>&1 &\\); sleep 1.5; curl -s localhost:3001/api/health; echo \" up\"')",
+      "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'Kanban cards: structured fields + detail panel *)",
+      "Bash(ps -o pid,ppid,lstart,command -p 1247,35866,35867)",
+      "Bash(curl -s localhost:5173/src/components/kanban/Card.jsx)",
+      "Bash(pkill -f \"Marketing VIsualizer/client/node_modules/.bin/vite\")",
+      "Bash(pkill -f \"Marketing VIsualizer.*index.js\")",
+      "Bash(pkill -f \"concurrently\")",
+      "Bash(pkill -f \"Marketing VIsualizer.*vite\")",
+      "Bash(bash -lc 'source ~/.nvm/nvm.sh && nvm use 22 >/dev/null 2>&1 && \\(node server/index.js > /tmp/mv-srv.log 2>&1 &\\); sleep 1.5; curl -s localhost:3001/api/health; echo \" api up\"')",
+      "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'dev: make '\\\\''npm run dev'\\\\'' work on default Node 16 via nvm auto-select *)"
     ]
   }
 }

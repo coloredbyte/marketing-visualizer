@@ -21,18 +21,18 @@ server/   Express API (dev on :3001, serves client/dist in prod)
 
 ## Getting started (dev)
 
-Two terminals:
+Requires **Node 18+** (Vite won't run on 16). From the repo root:
 
 ```bash
-# terminal 1 — API
-cd server && npm install && npm run dev
-
-# terminal 2 — frontend
-cd client && npm install && npm run dev
+npm run setup     # first time only — installs root + client + server deps
+npm run dev       # starts API (:3001) and frontend (:5173) together
 ```
 
-Open http://localhost:5173. The Vite dev server proxies `/api/*` to the Express
-server on :3001.
+Then open **http://localhost:5173** (not :3001 — that's the API). The Vite dev
+server proxies `/api/*` to Express on :3001.
+
+`npm run dev` auto-selects Node 22 via nvm. If you ever see a Node-version
+error, run `nvm use 22` (or make it permanent with `nvm alias default 22`).
 
 ## Production build (what Render runs)
 

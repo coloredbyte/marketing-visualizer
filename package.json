@@ -8,7 +8,7 @@
   },
   "scripts": {
     "setup": "npm install && npm --prefix client install && npm --prefix server install",
-    "dev": "concurrently -n server,client -c blue,magenta \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
+    "dev": "bash -c 'source \"$HOME/.nvm/nvm.sh\" 2>/dev/null; nvm use 22 >/dev/null 2>&1; node scripts/require-node18.mjs && concurrently -n server,client -c blue,magenta \"npm --prefix server run dev\" \"npm --prefix client run dev\"'",
     "build": "npm --prefix client run build",
     "start": "npm --prefix server start",
     "preview:client": "npm --prefix client run dev"
