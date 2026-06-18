@@ -46,7 +46,8 @@
       "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'dev: make '\\\\''npm run dev'\\\\'' work on default Node 16 via nvm auto-select *)",
       "Bash(bash -lc 'source ~/.nvm/nvm.sh && nvm use 22 >/dev/null 2>&1 && npm run build 2>&1 | tail -4')",
       "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'Kanban: default new cards to Upwork tag + today'\\\\''s start date *)",
-      "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'Kanban: color-code Role pills \\(I'\\\\''m Hiring orange, Hiring me blue\\) *)"
+      "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'Kanban: color-code Role pills \\(I'\\\\''m Hiring orange, Hiring me blue\\) *)",
+      "Bash(bash -lc 'source ~/.nvm/nvm.sh && nvm use 22 >/dev/null 2>&1 && npm run build 2>&1 | tail -3')"
     ]
   }
 }

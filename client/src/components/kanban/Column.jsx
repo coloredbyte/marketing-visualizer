@@ -55,7 +55,11 @@ export default function Column({
           />
         ) : (
           <>
-            <span className="kanban-column-title" onClick={() => setRenaming(true)}>
+            <span
+              className="kanban-column-title"
+              title={column.title}
+              onClick={() => setRenaming(true)}
+            >
               {column.title}
             </span>
             <span className="kanban-column-count">{column.cards.length}</span>

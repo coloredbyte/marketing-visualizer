@@ -197,7 +197,7 @@ export default function Kanban() {
               />
             ))}
 
-            <div className="kanban-add-column">
+            <div className={'kanban-add-column' + (addingColumn ? ' is-adding' : '')}>
               {addingColumn ? (
                 <div className="kanban-add-card">
                   <input
@@ -235,9 +235,11 @@ export default function Kanban() {
                 <button
                   type="button"
                   className="kanban-add-list-trigger"
+                  title="Add a list"
+                  aria-label="Add a list"
                   onClick={() => setAddingColumn(true)}
                 >
-                  <Plus size={16} /> Add a list
+                  <Plus size={18} />
                 </button>
               )}
             </div>
