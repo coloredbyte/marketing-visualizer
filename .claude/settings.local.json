@@ -59,7 +59,8 @@
       "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'Kanban: rename to Member/Account, simplify Done cards, add filter bar *)",
       "Bash(curl -s localhost:3001/api/airtable/config)",
       "Bash(curl -s -w \" [%{http_code}]\" localhost:3001/api/airtable/tables)",
-      "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'Airtable integration \\(Phase 1\\): multi-base connection + data explorer *)"
+      "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'Airtable integration \\(Phase 1\\): multi-base connection + data explorer *)",
+      "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'Move Airtable data explorer to its own '\\\\''Table preview'\\\\'' tab *)"
     ]
   }
 }
