@@ -83,11 +83,24 @@ const impl = {
         id: col.id,
         title: col.title,
         position: col.position,
+        // Active cards only — a Finished date means the card is "done" and
+        // lives in Done Projects, not on the board.
         cards: data.cards
-          .filter((card) => card.columnId === col.id)
+          .filter((card) => card.columnId === col.id && !card.finishedDate)
           .sort(byPosition),
       }))
     return { id: board.id, name: board.name, columns }
+  },
+
+  // Completed cards for a board (those with a Finished date), newest first.
+  async getDoneCards(boardId) {
+    const data = await load()
+    const colIds = new Set(
+      data.columns.filter((c) => c.boardId === boardId).map((c) => c.id),
+    )
+    return data.cards
+      .filter((card) => card.finishedDate && colIds.has(card.columnId))
+      .sort((a, b) => (b.finishedDate || '').localeCompare(a.finishedDate || ''))
   },
 
   // ---- Columns ----
@@ -129,7 +142,10 @@ const impl = {
   async addCard(columnId, fields) {
     const data = await load()
     if (!data.columns.some((c) => c.id === columnId)) return null
-    const siblings = data.cards.filter((card) => card.columnId === columnId)
+    // Position among active cards only (done cards are out of the board flow).
+    const siblings = data.cards.filter(
+      (card) => card.columnId === columnId && !card.finishedDate,
+    )
     const card = {
       id: randomUUID(),
       columnId,
@@ -159,9 +175,23 @@ const impl = {
     if (!card) return false
     const columnId = card.columnId
     data.cards = data.cards.filter((c) => c.id !== cardId)
-    renumber(data.cards.filter((c) => c.columnId === columnId))
+    renumber(data.cards.filter((c) => c.columnId === columnId && !c.finishedDate))
     await save(data)
     return true
+  },
+
+  // Un-complete a card: clear its Finished date and drop it at the bottom of
+  // its column's active cards.
+  async restoreCard(cardId) {
+    const data = await load()
+    const card = data.cards.find((c) => c.id === cardId)
+    if (!card) return null
+    card.finishedDate = ''
+    card.position = data.cards.filter(
+      (c) => c.columnId === card.columnId && !c.finishedDate && c.id !== cardId,
+    ).length
+    await save(data)
+    return card
   },
 
   async moveCard(cardId, toColumnId, toIndex) {
@@ -171,8 +201,9 @@ const impl = {
     if (!data.columns.some((c) => c.id === toColumnId)) return null
     const fromColumnId = card.columnId
 
+    // Reindex among active cards only so done cards never offset the order.
     const target = data.cards
-      .filter((c) => c.columnId === toColumnId && c.id !== cardId)
+      .filter((c) => c.columnId === toColumnId && c.id !== cardId && !c.finishedDate)
       .sort(byPosition)
     card.columnId = toColumnId
     const idx = Math.max(0, Math.min(toIndex, target.length))
@@ -182,7 +213,7 @@ const impl = {
     })
 
     if (fromColumnId !== toColumnId) {
-      renumber(data.cards.filter((c) => c.columnId === fromColumnId))
+      renumber(data.cards.filter((c) => c.columnId === fromColumnId && !c.finishedDate))
     }
     await save(data)
     return card

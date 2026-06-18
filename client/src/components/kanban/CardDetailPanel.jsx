@@ -1,11 +1,19 @@
 import { useEffect, useState } from 'react'
 import { X, Trash2 } from 'lucide-react'
-import { ROLE_OPTIONS, TAG_OPTIONS } from '../../cardFields.js'
+import {
+  ROLE_OPTIONS,
+  TAG_OPTIONS,
+  cardFee,
+  feePct,
+  feeSide,
+  formatAmount,
+} from '../../cardFields.js'
+import DatePicker from './DatePicker.jsx'
 
 // Right-side drawer for viewing/editing every field on a card. Text fields
 // persist on blur; selects and dates persist immediately. A local draft holds
 // in-progress edits so background board reloads don't clobber typing.
-export default function CardDetailPanel({ card, onClose, onSave, onDelete }) {
+export default function CardDetailPanel({ card, onClose, onSave, onDelete, fees }) {
   const [draft, setDraft] = useState(card || {})
 
   // Re-sync only when a different card is opened.
@@ -113,23 +121,37 @@ export default function CardDetailPanel({ card, onClose, onSave, onDelete }) {
             </div>
           </label>
 
+          <div className="detail-field">
+            <span>Fee (auto)</span>
+            <div className="detail-readonly">
+              {feePct(draft, fees) == null ? (
+                <span className="muted">Set role &amp; platform to calculate</span>
+              ) : (
+                <>
+                  <strong>{formatAmount(cardFee(draft, fees))}</strong>
+                  <span className="muted">
+                    {feePct(draft, fees)}% · {draft.tag} {feeSide(draft.role)}
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+
           <div className="detail-row">
-            <label className="detail-field">
+            <div className="detail-field">
               <span>Started</span>
-              <input
-                type="date"
+              <DatePicker
                 value={draft.startedDate || ''}
-                onChange={(e) => setAndPersist('startedDate', e.target.value)}
+                onChange={(v) => setAndPersist('startedDate', v)}
               />
-            </label>
-            <label className="detail-field">
+            </div>
+            <div className="detail-field">
               <span>Finished</span>
-              <input
-                type="date"
+              <DatePicker
                 value={draft.finishedDate || ''}
-                onChange={(e) => setAndPersist('finishedDate', e.target.value)}
+                onChange={(v) => setAndPersist('finishedDate', v)}
               />
-            </label>
+            </div>
           </div>
 
           <label className="detail-field">

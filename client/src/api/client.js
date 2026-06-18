@@ -20,6 +20,8 @@ export const api = {
 
   // ---- Kanban ----
   getBoard: (boardId) => request(`/kanban/${boardId}/board`),
+  getDone: (boardId) => request(`/kanban/${boardId}/done`),
+  restoreCard: (cardId) => request(`/kanban/cards/${cardId}/restore`, { method: 'POST' }),
 
   addColumn: (boardId, title) =>
     request(`/kanban/${boardId}/columns`, { method: 'POST', ...body({ title }) }),
@@ -39,4 +41,9 @@ export const api = {
       method: 'POST',
       ...body({ toColumnId, toIndex }),
     }),
+
+  // ---- Settings ----
+  getFees: (boardId) => request(`/settings/fees/${boardId}`),
+  updateFees: (boardId, fields) =>
+    request(`/settings/fees/${boardId}`, { method: 'PATCH', ...body(fields) }),
 }

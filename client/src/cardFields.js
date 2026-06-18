@@ -34,6 +34,29 @@ export function formatAmount(amount) {
   return '$' + n.toLocaleString('en-US', { maximumFractionDigits: 2 })
 }
 
+// Role → fee side. I'm Hiring = buyer, Hiring me = seller.
+export function feeSide(role) {
+  if (role === 'im_hiring') return 'buyer'
+  if (role === 'hiring_me') return 'seller'
+  return null
+}
+
+// The fee % that applies to a card given the board's fee settings, or null if
+// it can't be determined (missing role or platform).
+export function feePct(card, fees) {
+  const side = feeSide(card?.role)
+  if (!side || !card?.tag) return null
+  const pct = Number(fees?.[card.tag]?.[side])
+  return Number.isFinite(pct) ? pct : null
+}
+
+// Auto-calculated card fee = Amount × applicable fee%. 0 when not determinable.
+export function cardFee(card, fees) {
+  const pct = feePct(card, fees)
+  if (pct == null) return 0
+  return ((Number(card?.amount) || 0) * pct) / 100
+}
+
 export function formatDate(iso, withYear = true) {
   if (!iso) return ''
   const d = new Date(iso + 'T00:00:00')

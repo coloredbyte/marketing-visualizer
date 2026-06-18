@@ -7,14 +7,20 @@ import {
   useSensor,
   useSensors,
   closestCorners,
+  pointerWithin,
 } from '@dnd-kit/core'
 import { arrayMove } from '@dnd-kit/sortable'
-import { Plus, X } from 'lucide-react'
+import { CSS } from '@dnd-kit/utilities'
+import { Plus, X, Trash2 } from 'lucide-react'
 import { api } from '../api/client.js'
 import { DEFAULT_TAG, todayISO } from '../cardFields.js'
 import Column from '../components/kanban/Column.jsx'
 import CardMeta from '../components/kanban/CardMeta.jsx'
+import BoardStats from '../components/kanban/BoardStats.jsx'
 import CardDetailPanel from '../components/kanban/CardDetailPanel.jsx'
+import ConfirmDialog from '../components/kanban/ConfirmDialog.jsx'
+import CompletedDropZone, { DROPZONE_ID } from '../components/kanban/CompletedDropZone.jsx'
+import DoneProjects from '../components/kanban/DoneProjects.jsx'
 
 // Locate a card or column id within the current board view.
 function locate(view, id) {
@@ -36,12 +42,21 @@ export default function Kanban() {
   const [addingColumn, setAddingColumn] = useState(false)
   const [newColumn, setNewColumn] = useState('')
   const [selectedId, setSelectedId] = useState(null)
+  const [confirm, setConfirm] = useState(null) // { title, message, confirmLabel, onConfirm }
+  const [fees, setFees] = useState(null)
+  const [done, setDone] = useState(null)
+  const [tab, setTab] = useState('exchanges') // 'exchanges' | 'done'
+  const [zonePulse, setZonePulse] = useState(false)
+  // Whether the last drop landed on the complete zone — read by the drop
+  // animation so the overlay shrinks/fades instead of springing back.
+  const lastDropOnZone = useRef(false)
 
-  // The currently-open card, derived fresh from the board each render so the
-  // panel reflects saved edits.
-  const selectedCard = view
-    ? view.columns.flatMap((c) => c.cards).find((c) => c.id === selectedId) || null
-    : null
+  // The currently-open card, derived fresh each render (from the active board
+  // or the done list) so the panel reflects saved edits.
+  const selectedCard =
+    (view ? view.columns.flatMap((c) => c.cards).find((c) => c.id === selectedId) : null) ||
+    (done ? done.find((c) => c.id === selectedId) : null) ||
+    null
 
   // Keep a ref in lockstep with state so drag handlers read the latest board
   // without waiting for a re-render.
@@ -55,6 +70,33 @@ export default function Kanban() {
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
   )
 
+  // Prefer the complete zone whenever the pointer is over it; otherwise use
+  // closestCorners so column sorting stays smooth.
+  const collisionDetection = useCallback((args) => {
+    const zone = pointerWithin(args).find((c) => c.id === DROPZONE_ID)
+    return zone ? [zone] : closestCorners(args)
+  }, [])
+
+  // When dropped on the complete zone, the card is "sucked in" (shrink + fade
+  // at the drop point); otherwise it springs back to its slot as usual.
+  const dropAnimation = {
+    duration: 200,
+    easing: 'cubic-bezier(0.4, 0, 1, 1)',
+    keyframes({ transform }) {
+      if (lastDropOnZone.current) {
+        const base = `translate3d(${transform.initial.x}px, ${transform.initial.y}px, 0)`
+        return [
+          { transform: `${base} scale(1)`, opacity: 1 },
+          { transform: `${base} scale(0.2)`, opacity: 0 },
+        ]
+      }
+      return [
+        { transform: CSS.Transform.toString(transform.initial), opacity: 1 },
+        { transform: CSS.Transform.toString(transform.final), opacity: 1 },
+      ]
+    },
+  }
+
   const load = useCallback(() => {
     setError(null)
     api
@@ -63,11 +105,30 @@ export default function Kanban() {
       .catch(() => setError('Could not load board'))
   }, [boardId, setBoard])
 
+  const loadDone = useCallback(() => {
+    api.getDone(boardId).then(setDone).catch(() => setDone([]))
+  }, [boardId])
+
+  // Reload both the active board and the done list after a mutation that can
+  // move cards between them (complete, restore, edits, deletes).
+  const refresh = useCallback(() => {
+    load()
+    loadDone()
+  }, [load, loadDone])
+
   useEffect(() => {
     setBoard(null)
+    setDone(null)
     setSelectedId(null)
+    setTab('exchanges')
     load()
-  }, [load, setBoard])
+    loadDone()
+  }, [load, loadDone, setBoard])
+
+  // Platform fees for the mini dashboard (set in Settings).
+  useEffect(() => {
+    api.getFees(boardId).then(setFees).catch(() => setFees(null))
+  }, [boardId])
 
   // ---- CRUD (reload after each mutation to stay in sync) ----
   const addColumnSubmit = () => {
@@ -77,20 +138,50 @@ export default function Kanban() {
     if (title) api.addColumn(boardId, title).then(load).catch(load)
   }
   const renameColumn = (id, title) => api.updateColumn(id, { title }).then(load).catch(load)
-  const deleteColumn = (id) => {
-    if (!window.confirm('Delete this list and all its cards?')) return
-    api.deleteColumn(id).then(load).catch(load)
-  }
   const addCard = (columnId, title) =>
     api
       .addCard(columnId, { title, tag: DEFAULT_TAG, startedDate: todayISO() })
       .then(load)
       .catch(load)
-  const editCard = (id, fields) => api.updateCard(id, fields).then(load).catch(load)
-  const deleteCard = (id) => api.deleteCard(id).then(load).catch(load)
-  const deleteCardFromPanel = (id) => {
-    setSelectedId(null)
-    deleteCard(id)
+  const editCard = (id, fields) => api.updateCard(id, fields).then(refresh).catch(refresh)
+
+  // Mark a card complete (sets Finished date = today → moves to Done Projects).
+  const completeCard = (id) =>
+    api.updateCard(id, { finishedDate: todayISO() }).then(refresh).catch(refresh)
+  // Send a done card back to its board column.
+  const restoreCard = (id) => api.restoreCard(id).then(refresh).catch(refresh)
+
+  // ---- Deletes (always confirmed via dialog) ----
+  const findCard = (id) =>
+    viewRef.current?.columns.flatMap((c) => c.cards).find((c) => c.id === id)
+
+  const requestDeleteCard = (id) => {
+    const card = findCard(id)
+    setConfirm({
+      title: 'Delete card',
+      message: `“${card?.title || 'This card'}” will be permanently deleted.`,
+      confirmLabel: 'Delete card',
+      onConfirm: () => {
+        setConfirm(null)
+        if (selectedId === id) setSelectedId(null)
+        api.deleteCard(id).then(refresh).catch(refresh)
+      },
+    })
+  }
+
+  const requestDeleteColumn = (id) => {
+    const col = viewRef.current?.columns.find((c) => c.id === id)
+    const n = col?.cards.length || 0
+    const cardNote = n ? ` and its ${n} card${n > 1 ? 's' : ''}` : ''
+    setConfirm({
+      title: 'Delete list',
+      message: `“${col?.title || 'This list'}”${cardNote} will be permanently deleted.`,
+      confirmLabel: 'Delete list',
+      onConfirm: () => {
+        setConfirm(null)
+        api.deleteColumn(id).then(refresh).catch(refresh)
+      },
+    })
   }
 
   // ---- Drag and drop ----
@@ -132,8 +223,16 @@ export default function Kanban() {
   }
 
   const onDragEnd = ({ active, over }) => {
+    lastDropOnZone.current = over?.id === DROPZONE_ID
     setActiveCard(null)
     if (!over) return
+    // Dropped on the "complete" zone → finish the card.
+    if (over.id === DROPZONE_ID) {
+      setZonePulse(true)
+      setTimeout(() => setZonePulse(false), 450)
+      completeCard(active.id)
+      return
+    }
     const d = viewRef.current
     const a = locate(d, active.id)
     const o = locate(d, over.id)
@@ -174,30 +273,57 @@ export default function Kanban() {
   return (
     <div className="page">
       <h1>{view?.name || 'Kanban'}</h1>
-      <p className="page-subtitle">Task board. Drag cards to reorder or move between lists.</p>
+      <p className="page-subtitle">Manage active exchanges and completed projects.</p>
+
+      <div className="board-tabs">
+        <button
+          type="button"
+          className={'board-tab' + (tab === 'exchanges' ? ' is-active' : '')}
+          onClick={() => setTab('exchanges')}
+        >
+          Exchanges
+        </button>
+        <button
+          type="button"
+          className={'board-tab' + (tab === 'done' ? ' is-active' : '')}
+          onClick={() => setTab('done')}
+        >
+          Done Projects
+          {done?.length ? <span className="board-tab-count">{done.length}</span> : null}
+        </button>
+      </div>
 
       {error && <div className="card">{error}</div>}
       {!view && !error && <div className="card">Loading…</div>}
 
-      {view && (
+      {tab === 'done' && (
+        <DoneProjects done={done} fees={fees} onOpen={setSelectedId} onRestore={restoreCard} />
+      )}
+
+      {tab === 'exchanges' && view && (
         <DndContext
           sensors={sensors}
-          collisionDetection={closestCorners}
+          collisionDetection={collisionDetection}
           onDragStart={onDragStart}
           onDragOver={onDragOver}
           onDragEnd={onDragEnd}
         >
+          <BoardStats view={view} fees={fees}>
+            <CompletedDropZone receiving={zonePulse} />
+          </BoardStats>
+
           <div className="kanban-board">
             {view.columns.map((column) => (
               <Column
                 key={column.id}
                 column={column}
                 onRename={renameColumn}
-                onDelete={deleteColumn}
+                onDelete={requestDeleteColumn}
                 onAddCard={addCard}
                 onEditCard={editCard}
-                onDeleteCard={deleteCard}
+                onDeleteCard={requestDeleteCard}
                 onOpenCard={setSelectedId}
+                fees={fees}
               />
             ))}
 
@@ -249,7 +375,7 @@ export default function Kanban() {
             </div>
           </div>
 
-          <DragOverlay>
+          <DragOverlay dropAnimation={dropAnimation}>
             {activeCard ? (
               <div
                 className="kanban-card is-overlay"
@@ -257,8 +383,18 @@ export default function Kanban() {
               >
                 <div className="kanban-card-top">
                   <span className="kanban-card-title">{activeCard.title}</span>
+                  {/* Static, invisible — only here to reserve the same width as
+                      the real card so the title doesn't reflow while dragging. */}
+                  <button
+                    type="button"
+                    className="icon-btn kanban-card-delete"
+                    tabIndex={-1}
+                    aria-hidden="true"
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </div>
-                <CardMeta card={activeCard} />
+                <CardMeta card={activeCard} fees={fees} />
               </div>
             ) : null}
           </DragOverlay>
@@ -270,9 +406,19 @@ export default function Kanban() {
           card={selectedCard}
           onClose={() => setSelectedId(null)}
           onSave={editCard}
-          onDelete={deleteCardFromPanel}
+          onDelete={requestDeleteCard}
+          fees={fees}
         />
       )}
+
+      <ConfirmDialog
+        open={!!confirm}
+        title={confirm?.title}
+        message={confirm?.message}
+        confirmLabel={confirm?.confirmLabel}
+        onConfirm={() => confirm?.onConfirm?.()}
+        onCancel={() => setConfirm(null)}
+      />
     </div>
   )
 }

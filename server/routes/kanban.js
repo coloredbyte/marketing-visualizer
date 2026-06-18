@@ -7,13 +7,31 @@ const router = Router()
 const wrap = (fn) => (req, res, next) => fn(req, res, next).catch(next)
 
 // ---- Board ----
-// GET /api/kanban/:boardId/board — assembled board (columns + ordered cards).
+// GET /api/kanban/:boardId/board — assembled board (active cards only).
 router.get(
   '/:boardId/board',
   wrap(async (req, res) => {
     const board = await kanbanRepo.getBoardView(req.params.boardId)
     if (!board) return res.status(404).json({ error: 'Board not found' })
     res.json(board)
+  }),
+)
+
+// GET /api/kanban/:boardId/done — completed cards (have a Finished date).
+router.get(
+  '/:boardId/done',
+  wrap(async (req, res) => {
+    res.json(await kanbanRepo.getDoneCards(req.params.boardId))
+  }),
+)
+
+// POST /api/kanban/cards/:cardId/restore — un-complete a card back to the board.
+router.post(
+  '/cards/:cardId/restore',
+  wrap(async (req, res) => {
+    const card = await kanbanRepo.restoreCard(req.params.cardId)
+    if (!card) return res.status(404).json({ error: 'Card not found' })
+    res.json(card)
   }),
 )
 

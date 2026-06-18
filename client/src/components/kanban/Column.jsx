@@ -14,6 +14,7 @@ export default function Column({
   onEditCard,
   onDeleteCard,
   onOpenCard,
+  fees,
 }) {
   const { setNodeRef } = useDroppable({ id: column.id })
   const [renaming, setRenaming] = useState(false)
@@ -88,6 +89,7 @@ export default function Column({
               onEdit={onEditCard}
               onDelete={onDeleteCard}
               onOpen={onOpenCard}
+              fees={fees}
             />
           ))}
         </SortableContext>

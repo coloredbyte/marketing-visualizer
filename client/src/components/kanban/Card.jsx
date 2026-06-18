@@ -7,7 +7,7 @@ import CardMeta from './CardMeta.jsx'
 // A draggable card. Click the title to rename inline; click elsewhere on the
 // card to open the detail panel; trash to delete. Everything but Notes is
 // surfaced on the card face.
-export default function Card({ card, onEdit, onDelete, onOpen }) {
+export default function Card({ card, onEdit, onDelete, onOpen, fees }) {
   const [editing, setEditing] = useState(false)
   const [value, setValue] = useState(card.title)
   const downPos = useRef(null)
@@ -93,7 +93,7 @@ export default function Card({ card, onEdit, onDelete, onOpen }) {
         </button>
       </div>
 
-      <CardMeta card={card} />
+      <CardMeta card={card} fees={fees} />
     </div>
   )
 }

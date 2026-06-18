@@ -48,7 +48,12 @@
       "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'Kanban: default new cards to Upwork tag + today'\\\\''s start date *)",
       "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'Kanban: color-code Role pills \\(I'\\\\''m Hiring orange, Hiring me blue\\) *)",
       "Bash(bash -lc 'source ~/.nvm/nvm.sh && nvm use 22 >/dev/null 2>&1 && npm run build 2>&1 | tail -3')",
-      "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'Kanban: drag overlay shows the full card, not just the title *)"
+      "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'Kanban: drag overlay shows the full card, not just the title *)",
+      "Bash(bash -lc 'source ~/.nvm/nvm.sh && nvm use 22 >/dev/null 2>&1 *)",
+      "Bash(curl -s localhost:3001/api/kanban/lucas/board)",
+      "Bash(python3 -c \"import sys,json;d=json.load\\(sys.stdin\\);print\\('cols:',[\\(c['title'],len\\(c['cards']\\)\\) for c in d['columns']]\\)\")",
+      "Bash(curl -s localhost:3001/api/kanban/lucas/done)",
+      "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'Kanban: dashboards, fees, completion flow, themed dialogs & date picker *)"
     ]
   }
 }
