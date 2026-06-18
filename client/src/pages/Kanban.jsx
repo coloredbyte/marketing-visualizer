@@ -11,6 +11,7 @@ import {
 import { arrayMove } from '@dnd-kit/sortable'
 import { Plus, X } from 'lucide-react'
 import { api } from '../api/client.js'
+import { DEFAULT_TAG, todayISO } from '../cardFields.js'
 import Column from '../components/kanban/Column.jsx'
 import CardDetailPanel from '../components/kanban/CardDetailPanel.jsx'
 
@@ -79,7 +80,10 @@ export default function Kanban() {
     api.deleteColumn(id).then(load).catch(load)
   }
   const addCard = (columnId, title) =>
-    api.addCard(columnId, { title }).then(load).catch(load)
+    api
+      .addCard(columnId, { title, tag: DEFAULT_TAG, startedDate: todayISO() })
+      .then(load)
+      .catch(load)
   const editCard = (id, fields) => api.updateCard(id, fields).then(load).catch(load)
   const deleteCard = (id) => api.deleteCard(id).then(load).catch(load)
   const deleteCardFromPanel = (id) => {

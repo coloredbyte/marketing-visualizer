@@ -103,6 +103,7 @@ export default function CardDetailPanel({ card, onClose, onSave, onDelete }) {
                 type="number"
                 min="0"
                 step="1"
+                placeholder="0"
                 value={draft.amount ?? ''}
                 onChange={(e) => set('amount', e.target.value)}
                 onBlur={() =>

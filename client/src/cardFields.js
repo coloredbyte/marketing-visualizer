@@ -16,6 +16,17 @@ export const TAG_OPTIONS = [
 export const labelFor = (options, value) =>
   options.find((o) => o.value === value)?.label || ''
 
+// Defaults applied when a new card is created.
+export const DEFAULT_TAG = 'upwork'
+
+// Local YYYY-MM-DD for today (built from local parts to avoid UTC off-by-one).
+export function todayISO() {
+  const d = new Date()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${m}-${day}`
+}
+
 export function formatAmount(amount) {
   if (amount === '' || amount === null || amount === undefined) return ''
   const n = Number(amount)
