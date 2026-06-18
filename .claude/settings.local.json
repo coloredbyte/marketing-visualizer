@@ -60,7 +60,13 @@
       "Bash(curl -s localhost:3001/api/airtable/config)",
       "Bash(curl -s -w \" [%{http_code}]\" localhost:3001/api/airtable/tables)",
       "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'Airtable integration \\(Phase 1\\): multi-base connection + data explorer *)",
-      "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'Move Airtable data explorer to its own '\\\\''Table preview'\\\\'' tab *)"
+      "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'Move Airtable data explorer to its own '\\\\''Table preview'\\\\'' tab *)",
+      "Bash(exit 0)",
+      "Bash(python3 -c \"import sys,json;d=json.load\\(sys.stdin\\);[print\\(b['label'],'::',b['baseId']\\) for b in d['bases']]\")",
+      "Bash(curl -s \"localhost:3001/api/airtable/tables?baseId=apphuH95FjCpPXR1t\")",
+      "Bash(curl -s \"localhost:3001/api/airtable/records?baseId=apphuH95FjCpPXR1t&table=Proposals%20Sent&maxRecords=4\")",
+      "Bash(curl -s \"localhost:3001/api/airtable/records?baseId=apphuH95FjCpPXR1t&table=Proposals%20Sent&maxRecords=5000\")",
+      "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'Dashboard: date-range filter + Service funnel metrics on Overview *)"
     ]
   }
 }

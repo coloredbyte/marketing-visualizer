@@ -1,34 +1,136 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client.js'
+import { DASHBOARD, isConfigured } from '../dashboardConfig.js'
+import DateRangeFilter from '../components/dashboard/DateRangeFilter.jsx'
+import StatCard from '../components/dashboard/StatCard.jsx'
+
+// Single-select comes back as a string; guard the other shapes just in case.
+function cellName(v) {
+  if (v == null || v === '') return 'Unassigned'
+  if (Array.isArray(v)) return v.map((x) => (x && typeof x === 'object' ? x.name : x)).join(', ')
+  if (typeof v === 'object') return v.name || 'Unassigned'
+  return String(v)
+}
+const num = (v) => (Number.isFinite(Number(v)) ? Number(v) : 0)
+const fmtRate = (calls, proposals) => (proposals > 0 ? `${((calls / proposals) * 100).toFixed(1)}%` : '—')
+
+function inRange(dateValue, from, to) {
+  if (!dateValue) return false
+  const d = String(dateValue).slice(0, 10)
+  if (from && d < from) return false
+  if (to && d > to) return false
+  return true
+}
+
+// Month-to-date; matches the "This month" preset so that chip shows active.
+function monthToDate() {
+  const d = new Date()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  return { from: `${d.getFullYear()}-${m}-01`, to: `${d.getFullYear()}-${m}-${String(d.getDate()).padStart(2, '0')}` }
+}
 
 export default function Overview() {
   const [config, setConfig] = useState(null)
+  const [records, setRecords] = useState(null)
+  const [error, setError] = useState('')
+  const [range, setRange] = useState(() => monthToDate())
+  const [sel, setSel] = useState(DASHBOARD.dimension.options[0].label)
 
   useEffect(() => {
     api.getAirtableConfig().then(setConfig).catch(() => setConfig({ connected: false }))
   }, [])
 
-  return (
-    <div className="page">
-      <h1>Overview</h1>
-      <p className="page-subtitle">Leads &amp; sales dashboard.</p>
+  useEffect(() => {
+    if (!config?.connected || !isConfigured()) return
+    const base = config.bases?.find((b) => b.label === DASHBOARD.baseLabel)
+    if (!base) {
+      setError(`Base “${DASHBOARD.baseLabel}” isn’t connected — check Settings.`)
+      return
+    }
+    setError('')
+    setRecords(null)
+    api
+      .getAirtableRecords(base.baseId, DASHBOARD.table, 5000)
+      .then(setRecords)
+      .catch((e) => setError(e.message))
+  }, [config])
 
-      {config && !config.connected ? (
+  const options = DASHBOARD.dimension.options
+
+  const metrics = useMemo(() => {
+    if (!records || !sel) return null
+    const opt = options.find((o) => o.label === sel)
+    const allowed = new Set(opt?.values || [])
+    let proposals = 0
+    let replies = 0
+    let calls = 0
+    for (const r of records) {
+      if (!allowed.has(cellName(r[DASHBOARD.dimension.field]))) continue
+      if (!inRange(r[DASHBOARD.dateField], range.from, range.to)) continue
+      proposals += num(r[DASHBOARD.proposalsField])
+      replies += num(r[DASHBOARD.repliesField])
+      calls += num(r[DASHBOARD.bookedCallsField])
+    }
+    return { proposals, replies, calls }
+  }, [records, range, sel, options])
+
+  if (!config) {
+    return (
+      <div className="page">
+        <h1>Overview</h1>
+        <div className="card">Loading…</div>
+      </div>
+    )
+  }
+
+  if (!config.connected) {
+    return (
+      <div className="page">
+        <h1>Overview</h1>
+        <p className="page-subtitle">Leads &amp; sales dashboard.</p>
         <div className="card">
           <span>Connect Airtable to power the dashboard.</span>
           <Link to="/settings" className="btn-primary" style={{ textDecoration: 'none' }}>
             Connect in Settings
           </Link>
         </div>
-      ) : (
-        <div className="card">
-          <span className="muted">
-            Charts are coming next — explore your data in{' '}
-            <Link to="/table-preview">Table preview</Link> and tell me what to aggregate.
-          </span>
-        </div>
-      )}
+      </div>
+    )
+  }
+
+  const m = metrics
+
+  return (
+    <div className="page">
+      <DateRangeFilter value={range} onChange={setRange} />
+
+      <div className="va-filter">
+        <label>{DASHBOARD.dimension.label}</label>
+        <select value={sel} onChange={(e) => setSel(e.target.value)}>
+          {options.map((o) => (
+            <option key={o.label} value={o.label}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {error && <div className="card">{error}</div>}
+      {!error && !m && <div className="card">Loading data…</div>}
+
+      <div className="bento">
+        <StatCard label="Proposals sent" value={m ? m.proposals.toLocaleString() : '—'} />
+        <StatCard label="Replies" value={m ? m.replies.toLocaleString() : '—'} />
+        <StatCard label="Reply rate" value={m ? fmtRate(m.replies, m.proposals) : '—'} />
+        <StatCard label="Calls booked" value={m ? m.calls.toLocaleString() : '—'} />
+        <StatCard label="Booked-call rate" value={m ? fmtRate(m.calls, m.proposals) : '—'} />
+      </div>
     </div>
   )
+}
+
+function rangeLabel(range) {
+  if (!range.from && !range.to) return 'All time'
+  return `${range.from || '…'} → ${range.to || '…'}`
 }

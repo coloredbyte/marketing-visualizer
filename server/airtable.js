@@ -65,11 +65,20 @@ export async function listTables(baseId) {
   }))
 }
 
-// Records for a table (flattened: { id, ...fields }).
-export async function listRecords(baseId, table, { maxRecords = 100 } = {}) {
+// Records for a table (flattened: { id, ...fields }). Pages through Airtable's
+// 100-per-request limit up to maxRecords so dashboard aggregates are complete.
+export async function listRecords(baseId, table, { maxRecords = 1000 } = {}) {
   const config = await requireToken()
   ensureBase(config, baseId)
-  const url = `${API}/${baseId}/${encodeURIComponent(table)}?maxRecords=${maxRecords}`
-  const data = await airtableFetch(url, config.token)
-  return (data.records || []).map((r) => ({ id: r.id, ...r.fields }))
+  const out = []
+  let offset
+  do {
+    const params = new URLSearchParams({ pageSize: String(Math.min(100, maxRecords)) })
+    if (offset) params.set('offset', offset)
+    const url = `${API}/${baseId}/${encodeURIComponent(table)}?${params}`
+    const data = await airtableFetch(url, config.token)
+    for (const r of data.records || []) out.push({ id: r.id, ...r.fields })
+    offset = data.offset
+  } while (offset && out.length < maxRecords)
+  return out.slice(0, maxRecords)
 }
