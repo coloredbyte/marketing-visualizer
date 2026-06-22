@@ -38,6 +38,7 @@ function merge(stored) {
   return {
     upwork: { ...DEFAULT_FEES.upwork, ...(typeof s.upwork === 'object' ? s.upwork : {}) },
     fiverr: { ...DEFAULT_FEES.fiverr, ...(typeof s.fiverr === 'object' ? s.fiverr : {}) },
+    upworkFixed: Number(s.upworkFixed) || 0, // monthly fixed Upwork cost
   }
 }
 
@@ -63,6 +64,7 @@ export const settingsStore = {
           }
         }
       }
+      if (patch?.upworkFixed !== undefined) next.upworkFixed = Number(patch.upworkFixed) || 0
       data.fees[boardId] = next
       await save(data)
       return next

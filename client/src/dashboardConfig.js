@@ -9,15 +9,18 @@ export const DASHBOARD = {
   proposalsField: 'Proposals Sent',
   repliesField: 'Replies',
   bookedCallsField: 'Booked Calls',
+  costField: 'Cost',
   // Dashboard dropdown filter. `options` are curated — each matches one or more
   // values of `field`. The first option is the default.
   dimension: {
     field: 'Service',
     label: 'Service',
+    // `values` matches the Airtable Service field; `boards` maps to the kanban
+    // boards for the Proposal cost card (Shopify → Lucas, Shopify2 → Gustavo).
     options: [
-      { label: 'Shopify + Shopify2', values: ['Shopify', 'Shopify2'] },
-      { label: 'Shopify', values: ['Shopify'] },
-      { label: 'Shopify2', values: ['Shopify2'] },
+      { label: 'Shopify + Shopify2', values: ['Shopify', 'Shopify2'], boards: ['lucas', 'gustavo'] },
+      { label: 'Shopify', values: ['Shopify'], boards: ['lucas'] },
+      { label: 'Shopify2', values: ['Shopify2'], boards: ['gustavo'] },
     ],
   },
 }

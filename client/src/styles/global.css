@@ -1574,6 +1574,22 @@ body {
   min-width: 0;
 }
 
+/* Forces the following cards onto a new grid row. */
+.bento-break {
+  grid-column: 1 / -1;
+  height: 0;
+}
+
+.bento-card.is-green {
+  border-color: rgba(62, 207, 142, 0.4);
+  background: rgba(62, 207, 142, 0.07);
+}
+
+.bento-card.is-green .stat-card-value,
+.bento-card.is-green .stat-card-label {
+  color: var(--green);
+}
+
 .bento-sm {
   grid-column: span 1;
 }

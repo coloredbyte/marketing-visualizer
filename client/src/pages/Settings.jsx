@@ -64,6 +64,30 @@ export default function Settings() {
     </div>
   )
 
+  const updateFixed = (boardId, value) =>
+    setFees((prev) => ({ ...prev, [boardId]: { ...prev[boardId], upworkFixed: value } }))
+  const persistFixed = (boardId) => {
+    const v = fees[boardId]?.upworkFixed
+    api.updateFees(boardId, { upworkFixed: v === '' || v == null ? 0 : Number(v) }).catch(() => {})
+  }
+
+  const fixedInput = (boardId) => (
+    <label className="detail-field">
+      <span>Upwork fixed cost / month</span>
+      <div className="input-prefixed">
+        <span className="prefix">$</span>
+        <input
+          type="number"
+          min="0"
+          step="1"
+          value={fees[boardId]?.upworkFixed ?? ''}
+          onChange={(e) => updateFixed(boardId, e.target.value)}
+          onBlur={() => persistFixed(boardId)}
+        />
+      </div>
+    </label>
+  )
+
   return (
     <div className="page">
       <h1>Settings</h1>
@@ -88,6 +112,7 @@ export default function Settings() {
             </div>
             {platformBlock(b.id, 'upwork', 'Upwork')}
             {platformBlock(b.id, 'fiverr', 'Fiverr')}
+            {fixedInput(b.id)}
           </div>
         ))}
       </div>

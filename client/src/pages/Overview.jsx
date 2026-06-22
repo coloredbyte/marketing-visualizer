@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client.js'
 import { DASHBOARD, isConfigured } from '../dashboardConfig.js'
+import { formatAmount, cardFee } from '../cardFields.js'
+import { BOARDS } from '../boards.js'
 import DateRangeFilter from '../components/dashboard/DateRangeFilter.jsx'
 import StatCard from '../components/dashboard/StatCard.jsx'
 
@@ -23,6 +25,14 @@ function inRange(dateValue, from, to) {
   return true
 }
 
+// Inclusive calendar-month count spanned by the range; unbounded ranges = 1.
+function monthsInRange(from, to) {
+  if (!from || !to) return 1
+  const [fy, fm] = from.split('-').map(Number)
+  const [ty, tm] = to.split('-').map(Number)
+  return Math.max(1, ty * 12 + tm - (fy * 12 + fm) + 1)
+}
+
 // Month-to-date; matches the "This month" preset so that chip shows active.
 function monthToDate() {
   const d = new Date()
@@ -36,9 +46,41 @@ export default function Overview() {
   const [error, setError] = useState('')
   const [range, setRange] = useState(() => monthToDate())
   const [sel, setSel] = useState(DASHBOARD.dimension.options[0].label)
+  // Upwork kanban cards (both boards) annotated with their computed fee.
+  const [kanbanCards, setKanbanCards] = useState(null)
+  const [fixedCosts, setFixedCosts] = useState(null) // { boardId: monthly fixed cost }
 
   useEffect(() => {
     api.getAirtableConfig().then(setConfig).catch(() => setConfig({ connected: false }))
+  }, [])
+
+  // Pull every card (active + done) from both boards plus each board's fees,
+  // and precompute each card's fee (fee % doesn't depend on the date range).
+  useEffect(() => {
+    Promise.all(
+      BOARDS.map(async (b) => {
+        const [board, done, fees] = await Promise.all([
+          api.getBoard(b.id),
+          api.getDone(b.id),
+          api.getFees(b.id),
+        ])
+        const cards = [...board.columns.flatMap((c) => c.cards), ...done].map((card) => ({
+          board: b.id,
+          tag: card.tag,
+          finishedDate: card.finishedDate || '',
+          fee: cardFee(card, fees),
+        }))
+        return { boardId: b.id, cards, fixed: Number(fees.upworkFixed) || 0 }
+      }),
+    )
+      .then((results) => {
+        setKanbanCards(results.flatMap((r) => r.cards))
+        setFixedCosts(Object.fromEntries(results.map((r) => [r.boardId, r.fixed])))
+      })
+      .catch(() => {
+        setKanbanCards([])
+        setFixedCosts({})
+      })
   }, [])
 
   useEffect(() => {
@@ -65,15 +107,41 @@ export default function Overview() {
     let proposals = 0
     let replies = 0
     let calls = 0
+    let cost = 0
     for (const r of records) {
       if (!allowed.has(cellName(r[DASHBOARD.dimension.field]))) continue
       if (!inRange(r[DASHBOARD.dateField], range.from, range.to)) continue
       proposals += num(r[DASHBOARD.proposalsField])
       replies += num(r[DASHBOARD.repliesField])
       calls += num(r[DASHBOARD.bookedCallsField])
+      cost += num(r[DASHBOARD.costField])
     }
-    return { proposals, replies, calls }
+    return { proposals, replies, calls, cost }
   }, [records, range, sel, options])
+
+  // Upwork proposal cost: sum of fees on Upwork cards that are still active
+  // (no Finished date) or finished within the selected range.
+  const proposalCost = useMemo(() => {
+    if (!kanbanCards) return null
+    const opt = options.find((o) => o.label === sel)
+    const boards = new Set(opt?.boards || [])
+    let sum = 0
+    for (const c of kanbanCards) {
+      if (!boards.has(c.board)) continue
+      if (c.tag !== 'upwork') continue
+      if (c.finishedDate && !inRange(c.finishedDate, range.from, range.to)) continue
+      sum += c.fee
+    }
+    return sum
+  }, [kanbanCards, range, sel, options])
+
+  // Upwork fixed cost: each selected board's monthly fixed cost × months in range.
+  const fixedCost = useMemo(() => {
+    if (!fixedCosts) return null
+    const opt = options.find((o) => o.label === sel)
+    const months = monthsInRange(range.from, range.to)
+    return (opt?.boards || []).reduce((sum, b) => sum + (fixedCosts[b] || 0) * months, 0)
+  }, [fixedCosts, range, sel, options])
 
   if (!config) {
     return (
@@ -100,6 +168,9 @@ export default function Overview() {
   }
 
   const m = metrics
+  // Total Upwork cost = VA cost (Airtable) + proposal fees + fixed cost.
+  const totalCost = m ? m.cost + (proposalCost || 0) + (fixedCost || 0) : null
+  const costPerCall = m && totalCost != null && m.calls > 0 ? totalCost / m.calls : null
 
   return (
     <div className="page">
@@ -125,6 +196,26 @@ export default function Overview() {
         <StatCard label="Reply rate" value={m ? fmtRate(m.replies, m.proposals) : '—'} />
         <StatCard label="Calls booked" value={m ? m.calls.toLocaleString() : '—'} />
         <StatCard label="Booked-call rate" value={m ? fmtRate(m.calls, m.proposals) : '—'} />
+
+        <div className="bento-break" />
+        <StatCard label="Upwork cost" value={m ? formatAmount(m.cost) : '—'} />
+        <StatCard
+          label="Proposal cost"
+          value={proposalCost != null ? formatAmount(proposalCost) : '—'}
+        />
+        <StatCard
+          label="UW fixed cost"
+          value={fixedCost != null ? formatAmount(fixedCost) : '—'}
+        />
+        <StatCard
+          label="Total Upwork cost"
+          value={totalCost != null ? formatAmount(totalCost) : '—'}
+        />
+        <StatCard
+          label="Cost per call"
+          value={costPerCall != null ? formatAmount(costPerCall) : '—'}
+          tone="green"
+        />
       </div>
     </div>
   )
