@@ -6,6 +6,7 @@ import { formatAmount, cardFee } from '../cardFields.js'
 import { BOARDS } from '../boards.js'
 import DateRangeFilter from '../components/dashboard/DateRangeFilter.jsx'
 import StatCard from '../components/dashboard/StatCard.jsx'
+import MetricChart from '../components/dashboard/MetricChart.jsx'
 
 // Single-select comes back as a string; guard the other shapes just in case.
 function cellName(v) {
@@ -24,6 +25,8 @@ function inRange(dateValue, from, to) {
   if (to && d > to) return false
   return true
 }
+
+const ym = (dateValue) => String(dateValue || '').slice(0, 7) // YYYY-MM
 
 // Inclusive calendar-month count spanned by the range; unbounded ranges = 1.
 function monthsInRange(from, to) {
@@ -49,6 +52,9 @@ export default function Overview() {
   // Upwork kanban cards (both boards) annotated with their computed fee.
   const [kanbanCards, setKanbanCards] = useState(null)
   const [fixedCosts, setFixedCosts] = useState(null) // { boardId: monthly fixed cost }
+  const [charts, setCharts] = useState([]) // active chart keys in the right panel
+  const toggleChart = (key) =>
+    setCharts((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]))
 
   useEffect(() => {
     api.getAirtableConfig().then(setConfig).catch(() => setConfig({ connected: false }))
@@ -67,6 +73,7 @@ export default function Overview() {
         const cards = [...board.columns.flatMap((c) => c.cards), ...done].map((card) => ({
           board: b.id,
           tag: card.tag,
+          startedDate: card.startedDate || '',
           finishedDate: card.finishedDate || '',
           fee: cardFee(card, fees),
         }))
@@ -143,6 +150,43 @@ export default function Overview() {
     return (opt?.boards || []).reduce((sum, b) => sum + (fixedCosts[b] || 0) * months, 0)
   }, [fixedCosts, range, sel, options])
 
+  // Monthly cost-per-call series for the chart (full history, ignores the date
+  // range; respects the Service selection). Airtable cost+calls bucket by Date,
+  // kanban fees by Started date, monthly fixed cost added to each month present.
+  const costPerCallSeries = useMemo(() => {
+    if (!records || !kanbanCards || !fixedCosts) return null
+    const opt = options.find((o) => o.label === sel)
+    const serviceVals = new Set(opt?.values || [])
+    const boards = new Set(opt?.boards || [])
+    const monthlyFixed = [...boards].reduce((s, b) => s + (fixedCosts[b] || 0), 0)
+
+    const byMonth = {}
+    const bucket = (m) => (byMonth[m] ||= { cost: 0, calls: 0 })
+
+    for (const r of records) {
+      if (!serviceVals.has(cellName(r[DASHBOARD.dimension.field]))) continue
+      const m = ym(r[DASHBOARD.dateField])
+      if (!m) continue
+      const slot = bucket(m)
+      slot.cost += num(r[DASHBOARD.costField])
+      slot.calls += num(r[DASHBOARD.bookedCallsField])
+    }
+    for (const c of kanbanCards) {
+      if (!boards.has(c.board) || c.tag !== 'upwork') continue
+      const m = ym(c.startedDate)
+      if (!m) continue
+      bucket(m).cost += c.fee
+    }
+
+    return Object.keys(byMonth)
+      .sort()
+      .map((m) => {
+        const s = byMonth[m]
+        const total = s.cost + monthlyFixed
+        return { month: m, value: s.calls > 0 ? total / s.calls : null, calls: s.calls }
+      })
+  }, [records, kanbanCards, fixedCosts, sel, options])
+
   if (!config) {
     return (
       <div className="page">
@@ -172,50 +216,77 @@ export default function Overview() {
   const totalCost = m ? m.cost + (proposalCost || 0) + (fixedCost || 0) : null
   const costPerCall = m && totalCost != null && m.calls > 0 ? totalCost / m.calls : null
 
+  // Registry of chartable metrics (their monthly series).
+  const chartDefs = {
+    costPerCall: {
+      title: 'Cost per call',
+      subtitle: `${sel} · monthly`,
+      data: costPerCallSeries || [],
+      formatValue: (v) => formatAmount(v),
+    },
+  }
+
   return (
     <div className="page">
-      <DateRangeFilter value={range} onChange={setRange} />
+      <div className="dashboard-layout">
+        <div className="dashboard-main">
+          <DateRangeFilter value={range} onChange={setRange} />
 
-      <div className="va-filter">
-        <label>{DASHBOARD.dimension.label}</label>
-        <select value={sel} onChange={(e) => setSel(e.target.value)}>
-          {options.map((o) => (
-            <option key={o.label} value={o.label}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-      </div>
+          <div className="va-filter">
+            <label>{DASHBOARD.dimension.label}</label>
+            <select value={sel} onChange={(e) => setSel(e.target.value)}>
+              {options.map((o) => (
+                <option key={o.label} value={o.label}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
-      {error && <div className="card">{error}</div>}
-      {!error && !m && <div className="card">Loading data…</div>}
+          {error && <div className="card">{error}</div>}
+          {!error && !m && <div className="card">Loading data…</div>}
 
-      <div className="bento">
-        <StatCard label="Proposals sent" value={m ? m.proposals.toLocaleString() : '—'} />
-        <StatCard label="Replies" value={m ? m.replies.toLocaleString() : '—'} />
-        <StatCard label="Reply rate" value={m ? fmtRate(m.replies, m.proposals) : '—'} />
-        <StatCard label="Calls booked" value={m ? m.calls.toLocaleString() : '—'} />
-        <StatCard label="Booked-call rate" value={m ? fmtRate(m.calls, m.proposals) : '—'} />
+          <div className="bento">
+            <StatCard label="Proposals sent" value={m ? m.proposals.toLocaleString() : '—'} />
+            <StatCard label="Replies" value={m ? m.replies.toLocaleString() : '—'} />
+            <StatCard label="Reply rate" value={m ? fmtRate(m.replies, m.proposals) : '—'} />
+            <StatCard label="Calls booked" value={m ? m.calls.toLocaleString() : '—'} />
+            <StatCard label="Booked-call rate" value={m ? fmtRate(m.calls, m.proposals) : '—'} />
 
-        <div className="bento-break" />
-        <StatCard label="Upwork cost" value={m ? formatAmount(m.cost) : '—'} />
-        <StatCard
-          label="Proposal cost"
-          value={proposalCost != null ? formatAmount(proposalCost) : '—'}
-        />
-        <StatCard
-          label="UW fixed cost"
-          value={fixedCost != null ? formatAmount(fixedCost) : '—'}
-        />
-        <StatCard
-          label="Total Upwork cost"
-          value={totalCost != null ? formatAmount(totalCost) : '—'}
-        />
-        <StatCard
-          label="Cost per call"
-          value={costPerCall != null ? formatAmount(costPerCall) : '—'}
-          tone="green"
-        />
+            <div className="bento-break" />
+            <StatCard label="Upwork cost" value={m ? formatAmount(m.cost) : '—'} />
+            <StatCard
+              label="Proposal cost"
+              value={proposalCost != null ? formatAmount(proposalCost) : '—'}
+            />
+            <StatCard
+              label="UW fixed cost"
+              value={fixedCost != null ? formatAmount(fixedCost) : '—'}
+            />
+            <StatCard
+              label="Total Upwork cost"
+              value={totalCost != null ? formatAmount(totalCost) : '—'}
+            />
+            <StatCard
+              label="Cost per call"
+              value={costPerCall != null ? formatAmount(costPerCall) : '—'}
+              tone="green"
+              onGraph={() => toggleChart('costPerCall')}
+              graphActive={charts.includes('costPerCall')}
+            />
+          </div>
+        </div>
+
+        {charts.length > 0 && (
+          <aside className="dashboard-graphs">
+            {charts.map((key) => {
+              const def = chartDefs[key]
+              return def ? (
+                <MetricChart key={key} {...def} onClose={() => toggleChart(key)} />
+              ) : null
+            })}
+          </aside>
+        )}
       </div>
     </div>
   )

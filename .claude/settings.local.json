@@ -70,7 +70,9 @@
       "Bash(python3 -)",
       "Bash(curl -s localhost:3001/api/settings/fees/lucas)",
       "Bash(curl -s localhost:3001/api/settings/fees/gustavo)",
-      "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'Dashboard: cost cards \\(Upwork/Proposal/fixed\\) + totals & cost-per-call *)"
+      "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'Dashboard: cost cards \\(Upwork/Proposal/fixed\\) + totals & cost-per-call *)",
+      "Bash(git checkout *)",
+      "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'Dashboard: click-to-chart metrics in a sticky right panel *)"
     ]
   }
 }

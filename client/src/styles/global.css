@@ -1676,12 +1676,118 @@ body {
   }
 }
 
+.stat-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .stat-card-label {
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--text-muted);
+}
+
+.stat-graph-btn {
+  flex-shrink: 0;
+  margin: -4px -4px 0 0;
+  opacity: 0;
+  transition: opacity var(--ease), color var(--ease);
+}
+
+.bento-card:hover .stat-graph-btn,
+.stat-graph-btn.is-active {
+  opacity: 1;
+}
+
+.stat-graph-btn.is-active {
+  color: var(--accent);
+}
+
+/* ---- Dashboard split: cards (2/3) + graph panel (1/3) ---- */
+.dashboard-layout {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.dashboard-main {
+  flex: 2;
+  min-width: 0;
+}
+
+.dashboard-graphs {
+  flex: 1;
+  min-width: 0;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.graph-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 14px 10px;
+}
+
+.graph-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.graph-card-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.graph-card-sub {
+  margin-top: 1px;
+  font-size: 11px;
+}
+
+.graph-card-empty {
+  padding: 24px 0;
+  text-align: center;
+}
+
+/* ---- Metric chart modal ---- */
+.chart-modal {
+  width: 720px;
+  max-width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 22px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: popIn 0.14s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chart-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.chart-modal-head h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.chart-modal-head .muted {
+  margin: 2px 0 0;
 }
 
 .stat-card-value {
