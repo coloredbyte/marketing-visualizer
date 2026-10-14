@@ -3,6 +3,10 @@ dist/
 .env
 .env.local
 *.log
+.DS_Store
+
+# Personal Claude Code settings (per-machine permissions)
+.claude/settings.local.json
 
 # Local JSON data store (step 1 persistence)
 server/data/*.json
